@@ -1,16 +1,17 @@
 from __future__ import annotations
-from .exception import PoolStartedError
+
 import asyncio
 
-class Task:
-    ...
+from .exception import PoolStartedError
+
+
+class Task: ...
 
 
 class WorkerPool:
     """WorkerPool is a highly configurable asyncio worker pool."""
-    def __init__(self, 
-                 max_workers: int,
-                 worker_scale_duration: int = 0) -> None:
+
+    def __init__(self, max_workers: int, worker_scale_duration: int = 0) -> None:
         self.max_workers = max(0, max_workers)
         self.worker_scale_duration = worker_scale_duration
         self.q = asyncio.Queue(maxsize=0)
@@ -27,23 +28,17 @@ class WorkerPool:
         for worker_id in range(self.max_workers):
             worker = asyncio.create_task(self._worker(worker_id))
             self._worker_tasks.append(worker)
-            
-    
-    async def submit(self, task: Task) -> None:
-        ...
 
-    async def submit_wait(self, task: Task) -> None:
-        ...
-        
-    async def stop(self) -> None:
-        ...
-        
-    async def drain(self) -> None:
-        ...
-        
-    async def throttle(self, duration: int) -> None:
-        ...
-    
+    async def submit(self, task: Task) -> None: ...
+
+    async def submit_wait(self, task: Task) -> None: ...
+
+    async def stop(self) -> None: ...
+
+    async def drain(self) -> None: ...
+
+    async def throttle(self, duration: int) -> None: ...
+
     async def __enter__(self) -> WorkerPool:
         self.start()
         return self
@@ -56,9 +51,10 @@ class WorkerPool:
         the task until the shutdown event is triggered."""
         while self._shutdown.is_set():
             ...
-    
+
 
 class Worker:
     """Worker encapsulates a coroutine that can receive tasks to execute."""
+
     def __init__(self, q: asyncio.Queue) -> None:
         self.q = q
