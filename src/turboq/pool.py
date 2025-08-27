@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import asyncio
+from asyncio import Task
 
 from .exception import PoolStartedError
 
 
-class Task: ...
+class Job: ...
 
 
 class WorkerPool:
@@ -14,10 +15,10 @@ class WorkerPool:
     def __init__(self, max_workers: int, worker_scale_duration: int = 0) -> None:
         self.max_workers = max(0, max_workers)
         self.worker_scale_duration = worker_scale_duration
-        self.q = asyncio.Queue[Task](maxsize=0)
+        self.q = asyncio.Queue[Job](maxsize=0)
         self._shutdown = asyncio.Event()
         self._started = False
-        self._worker_tasks = []
+        self._worker_tasks: list[Task] = []
 
     def start(self) -> None:
         """start starts the worker pool, creating upto max_workers number of

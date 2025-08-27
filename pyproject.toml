@@ -28,3 +28,4 @@ extend-select = ["B", "I"]
 force-single-line = true
 
 [tool.mypy]
+ignore_missing_imports = true
