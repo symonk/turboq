@@ -14,7 +14,7 @@ class WorkerPool:
     def __init__(self, max_workers: int, worker_scale_duration: int = 0) -> None:
         self.max_workers = max(0, max_workers)
         self.worker_scale_duration = worker_scale_duration
-        self.q = asyncio.Queue(maxsize=0)
+        self.q = asyncio.Queue[Task](maxsize=0)
         self._shutdown = asyncio.Event()
         self._started = False
         self._worker_tasks = []
