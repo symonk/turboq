@@ -23,14 +23,14 @@ jobs:
                   uv venv --python 3.13 venv
                   ./venv/bin/python -m ensurepip --upgrade
                   ./venv/bin/python -m pip install --upgrade pip
-                  ./venv/bin/python -m pip install dist/*.whl pytest==8.4.1
+                  ./venv/bin/python -m pip install dist/*.whl pytest==8.4.1 pytest-asyncio==1.1.0
                   ./venv/bin/python -m pytest tests/
             - name: Validate Source Distribution
               run: |
                   uv venv --python 3.13 venv
                   ./venv/bin/python -m ensurepip --upgrade
                   ./venv/bin/python -m pip install --upgrade pip
-                  ./venv/bin/python -m pip install dist/*.tar.gz pytest==8.4.1
+                  ./venv/bin/python -m pip install dist/*.tar.gz pytest==8.4.1 pytest-asyncio==1.1.0
                   ./venv/bin/python -m pytest tests/
             - run: uv publish --trusted-publishing always
 
