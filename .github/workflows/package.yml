@@ -19,9 +19,9 @@ jobs:
             - uses: astral-sh/setup-uv@v6
             - run: uv build
             - name: Validate Wheel
-                run: uv run --isolated --no-project -p 3.13 --with dist/*.whl pytest tests/
+              run: uv run --isolated --no-project -p 3.13 --with dist/*.whl pytest tests/
             - name: Validate Source Distribution
-                run: uv run --isolated --no-project -p 3.13 --with dist/*.tar.gz pytest tests/
+              run: uv run --isolated --no-project -p 3.13 --with dist/*.tar.gz pytest tests/
             - run: uv publish --trusted-publishing always
 
 
