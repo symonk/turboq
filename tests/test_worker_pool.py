@@ -10,7 +10,7 @@ from turboq import WorkerPool
 
 def coro_factory():
     async def coro(*args, **kwargs):
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(0.1)
         print(*args, **kwargs)
         return 100
 
@@ -36,3 +36,20 @@ async def test_task_submission() -> None:
         await p.submit(t)
         done = await t
         assert_that(done).is_equal_to(100)
+
+
+@pytest.mark.asyncio
+async def test_many_tasks() -> None:
+    p = WorkerPool(max_workers=100)
+    p.start()
+    tees = []
+    for _ in range(1000):
+        tee = await p.submit(
+            PriorityTask(
+                priority=0, coro_factory=coro_factory, coro_args=(), coro_kwargs={}
+            )
+        )
+        tees.append(tee)
+    await p.stop()
+    out = await asyncio.gather(*tees)
+    assert_that(out).contains_only(100)

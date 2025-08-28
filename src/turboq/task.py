@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import typing
 
@@ -54,3 +56,6 @@ class PriorityTask:
                     self._future.set_exception(e)
                     raise
             await asyncio.sleep(self.retry_backoff * (2 ** (attempt - 1)))
+
+    def __lt__(self, other: PriorityTask) -> bool:
+        return self.priority < other.priority

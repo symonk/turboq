@@ -21,6 +21,7 @@ class Worker:
     async def __call__(self) -> typing.Coroutine:
         # TODO: These workers can crash and the event loop will still carry on, except the queue
         # will be completely blocking!
+        # TODO: asyncio.CancelledError handling, shielding etc.
         while True:
             if self.stopper.is_set() and self.q.empty():
                 break
@@ -39,4 +40,4 @@ class Worker:
                 print("got exception executing worker task: ", e)
                 raise
             finally:
-                self.queue.task_done()
+                self.q.task_done()

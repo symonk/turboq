@@ -39,12 +39,14 @@ class WorkerPool:
             w = Worker(identity=worker_id, q=self.q, stopper=self._shutdown_alert)
             worker_task = asyncio.create_task(w())
             self._worker_tasks.append(worker_task)
+            print("started worker: ", worker_id)
 
-    async def submit(self, t: PriorityTask) -> None:
+    async def submit(self, t: PriorityTask) -> PriorityTask:
         """submit enqueues a new task onto the pool, to be scheduled
         for execution at some point in the future.  submit is non
         blocking."""
         await self.q.put(t)
+        return t
 
     async def submit_wait(self, t: PriorityTask) -> None:
         """submit enqueues a new task onto the pool and blocks until
@@ -58,6 +60,7 @@ class WorkerPool:
         will raise an exception.
         """
         self._shutdown_alert.set()
+        await self.q.join()
         await asyncio.gather(*self._worker_tasks, return_exceptions=True)
 
     async def drain(self) -> None:
