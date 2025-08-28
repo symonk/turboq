@@ -40,10 +40,10 @@ async def test_task_submission() -> None:
 
 @pytest.mark.asyncio
 async def test_many_tasks() -> None:
-    p = WorkerPool(max_workers=100)
+    p = WorkerPool(max_workers=1024)
     p.start()
     tees = []
-    for _ in range(1000):
+    for _ in range(10000):
         tee = await p.submit(
             PriorityTask(
                 priority=0, coro_factory=coro_factory, coro_args=(), coro_kwargs={}
