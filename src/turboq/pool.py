@@ -21,9 +21,9 @@ class WorkerPool:
     Note: WorkerPool objects are not thread safe.
     """
 
-    def __init__(self, max_workers: int, worker_scale_duration: int = 0) -> None:
+    def __init__(self, max_workers: int, worker_batch_size: int = 1) -> None:
         self.max_workers = max(0, max_workers)
-        self.worker_scale_duration = worker_scale_duration
+        self.worker_batch_size = worker_batch_size
         self.q = asyncio.PriorityQueue[PriorityTask](maxsize=0)
         self._shutdown_alert = asyncio.Event()
         self._started = False

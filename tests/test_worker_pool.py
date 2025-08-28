@@ -40,16 +40,16 @@ async def test_task_submission() -> None:
 
 @pytest.mark.asyncio
 async def test_many_tasks() -> None:
-    p = WorkerPool(max_workers=1024)
+    p = WorkerPool(max_workers=10000)
     p.start()
-    tees = []
-    for _ in range(10000):
-        tee = await p.submit(
+    tees = [
+        await p.submit(
             PriorityTask(
                 priority=0, coro_factory=coro_factory, coro_args=(), coro_kwargs={}
             )
         )
-        tees.append(tee)
+        for _ in range(10_000)
+    ]
     await p.stop()
     out = await asyncio.gather(*tees)
     assert_that(out).contains_only(100)

@@ -3,6 +3,10 @@ import typing
 
 from .task import PriorityTask
 
+# TODO: Worker should be able to pull from the queue in batches.
+# TODO: Workers are limited by coroutine runtime, i.e 100ms a worker
+# can under ideal scenarios run 10/sec, batching will fix that.
+
 
 class Worker:
     """Worker encapsulates a coroutine that can receive tasks to execute."""
