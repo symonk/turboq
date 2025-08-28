@@ -3,6 +3,12 @@ revision = 3
 requires-python = ">=3.13"
 
 [[package]]
+name = "assertpy"
+version = "1.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/4f/39/720b5d4463612a40a166d00999cbb715fce3edaf08a9a7588ba5985699ec/assertpy-1.1.tar.gz", hash = "sha256:acc64329934ad71a3221de185517a43af33e373bb44dc05b5a9b174394ef4833", size = 25421, upload-time = "2020-07-19T14:39:02.462Z" }
+
+[[package]]
 name = "cfgv"
 version = "3.4.0"
 source = { registry = "https://pypi.org/simple" }
@@ -213,6 +219,7 @@ source = { editable = "." }
 
 [package.dev-dependencies]
 dev = [
+    { name = "assertpy" },
     { name = "mypy" },
     { name = "pre-commit" },
     { name = "pytest" },
@@ -223,6 +230,7 @@ dev = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "assertpy", specifier = ">=1.1" },
     { name = "mypy", specifier = ">=1.17.1" },
     { name = "pre-commit", specifier = ">=4.3.0" },
     { name = "pytest", specifier = ">=8.4.1" },

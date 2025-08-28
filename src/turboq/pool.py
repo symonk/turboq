@@ -1,24 +1,33 @@
 from __future__ import annotations
 
 import asyncio
-from asyncio import Task
+import typing
 
 from .exception import PoolStartedError
-
-
-class Job: ...
+from .task import PriorityTask
+from .worker import Worker
 
 
 class WorkerPool:
-    """WorkerPool is a highly configurable asyncio worker pool."""
+    """Workerpool is an implementation of the Pool interface that enables
+    dispatching various tasks asynchronously, backed by `asyncio`.
+
+    The pool itself does not start a loop, client code is responsible for managing
+    the loop.
+
+    The internals of the WorkerPool utilise a PriorityQueue, where the lower the
+    priority, the sooner it will be picked up by a worker.
+
+    Note: WorkerPool objects are not thread safe.
+    """
 
     def __init__(self, max_workers: int, worker_scale_duration: int = 0) -> None:
         self.max_workers = max(0, max_workers)
         self.worker_scale_duration = worker_scale_duration
-        self.q = asyncio.Queue[Job](maxsize=0)
-        self._shutdown = asyncio.Event()
+        self.q = asyncio.PriorityQueue[PriorityTask](maxsize=0)
+        self._shutdown_alert = asyncio.Event()
         self._started = False
-        self._worker_tasks: list[Task] = []
+        self._worker_tasks: list[asyncio.Task] = []
 
     def start(self) -> None:
         """start starts the worker pool, creating upto max_workers number of
@@ -27,35 +36,42 @@ class WorkerPool:
             raise PoolStartedError("pool is already running, cannot be started twice")
         self._started = True
         for worker_id in range(self.max_workers):
-            worker = asyncio.create_task(self._worker(worker_id))
-            self._worker_tasks.append(worker)
+            w = Worker(identity=worker_id, q=self.q, stopper=self._shutdown_alert)
+            worker_task = asyncio.create_task(w())
+            self._worker_tasks.append(worker_task)
 
-    async def submit(self, task: Task) -> None: ...
+    async def submit(self, t: PriorityTask) -> None:
+        """submit enqueues a new task onto the pool, to be scheduled
+        for execution at some point in the future.  submit is non
+        blocking."""
+        await self.q.put(t)
 
-    async def submit_wait(self, task: Task) -> None: ...
+    async def submit_wait(self, t: PriorityTask) -> None:
+        """submit enqueues a new task onto the pool and blocks until
+        that particular task has been completed."""
 
-    async def stop(self) -> None: ...
+    async def stop(self, graceful: bool = True) -> None:
+        """stop attempts to terminate the workerpool.
+        If graceful is set, stop will block until all inflight
+        tasks are completed and the internal queues are emptied.
+        Attempting to submit new tasks after stops has been called
+        will raise an exception.
+        """
+        self._shutdown_alert.set()
+        await asyncio.gather(*self._worker_tasks, return_exceptions=True)
 
-    async def drain(self) -> None: ...
+    async def drain(self) -> None:
+        """drain blocks enqueued tasks until the current internal
+        queues are emptied.  Upon emptying the queue normal consumption
+        will resume."""
 
-    async def throttle(self, duration: int) -> None: ...
+    async def throttle(self, predicate: typing.Callable[[None, None], bool]) -> None:
+        """throttle puts a temporary pause on the workers, preventing
+        them from executing tasks until the predicate is true."""
 
-    async def __enter__(self) -> WorkerPool:
+    async def __aenter__(self) -> WorkerPool:
         self.start()
         return self
 
-    async def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+    async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
         await self.stop()
-
-    async def _worker(self, worker_id: int) -> None:
-        """_worker attempts to read elements from the queue internally to process
-        the task until the shutdown event is triggered."""
-        while self._shutdown.is_set():
-            ...
-
-
-class Worker:
-    """Worker encapsulates a coroutine that can receive tasks to execute."""
-
-    def __init__(self, q: asyncio.Queue) -> None:
-        self.q = q
